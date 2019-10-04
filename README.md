@@ -1,7 +1,7 @@
 PCG: Power Chain Graph Structure Learning
 =============
 
-This package was developed acompanying the first of the authors' PhD dissertation.
+This package was developed acompanying authors' PhD dissertation.
 
 PCG depends on bnlearn, EGAnet, mclust, psych, pcalg, qgraph.
 
