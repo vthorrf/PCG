@@ -89,7 +89,7 @@ PCG <- function(data, clusters=NULL, alpha=.05){
 
   Result <- list("PCG" = t(PC),
                  "CG_F"=t(PCT),
-                 "CG_PC"=PCfu
+                 "CG_PC"=PCfu,
                  "CG_HC"=HCfu,
                  "CG_MMHC"=MMHC)
   return(Result)
