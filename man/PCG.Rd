@@ -11,6 +11,7 @@ PCG(data, clusters=NULL, alpha=.05)
    \item{data}{A data frame of the variables to be included in the PCG.}
    \item{clusters}{A integer vector of expected classes for each variable in data. If an exploratory approach is preferred, use "ega" for learning the cluster by the EGA method or "cgmm" learning the cluster by the CGMM method.}
    \item{alpha}{The significance level for testing the directional relations.}
+}
 \value{
 A list containing the following component:
   \item{PCG}{The estimate PCG.}
