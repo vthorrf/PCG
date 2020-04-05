@@ -10,10 +10,9 @@ This package should be considered experimental until further along in developmen
 # Installation #
 ---
 
-Using the 'devtools' package:
+Using the 'remotes' package:
 
-    install.packages("devtools")
-    library(devtools)
-    install_github("vthorrf/PCG")
+    install.packages("remotes")
+    remotes::install_github("vthorrf/PCG")
 
 
