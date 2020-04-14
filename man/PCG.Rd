@@ -1,5 +1,5 @@
-\name{Power Chain Graph}
-\alias{Power Chain Graph}
+\name{PCG}
+\alias{PCG}
 \title{Power Chain Graph Structure Learning}
 \description{
 Learns a power chain graph following Franco, Wiberg & Laros (under review).
