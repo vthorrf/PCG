@@ -5,12 +5,13 @@
 Learns a power chain graph following Franco, Wiberg & Laros (under review).
 }
 \usage{
-PCG(data, clusters=NULL, alpha=.05)
+PCG(data, clusters=NULL, alpha=.05, fineTuning=F)
 }
 \arguments{
    \item{data}{A data frame of the variables to be included in the PCG.}
    \item{clusters}{A integer vector of expected classes for each variable in data. If an exploratory approach is preferred, use "ega" for learning the cluster by the EGA method or "cgmm" learning the cluster by the CGMM method.}
    \item{alpha}{The significance level for testing the directional relations.}
+   \item{fineTuning}{Boolean indicating if fine-tuning should be performed. Defaults to FALSE.}
 }
 \value{
 A list containing the following component:

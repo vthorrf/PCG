@@ -1,9 +1,10 @@
-PCG <- function(data, clusters=NULL, alpha=.05){
+PCG <- function(data, clusters=NULL, alpha=.05, fineTuning=F){
 
   ### Step 1: Get clusters====
+  print("Step 1: Get clusters")
   ## Polychoric correlation
   require(psych)
-  Corr <- tryCatch(psych::mixed.cor(data)$rho, error=function(e) {
+  Corr <- tryCatch(psych::mixedCor(data)$rho, error=function(e) {
                    cor(data, method="spearman")
   })
   n <- nrow(data)
@@ -11,15 +12,16 @@ PCG <- function(data, clusters=NULL, alpha=.05){
       node_set <- clusters
     } else if (clusters=="ega") {
       require(EGAnet)
-      Dims <- EGAnet::EGA(data=data, plot.EGA=F)
+      Dims <- EGAnet::EGA(data=Corr, n=n, plot.EGA=F)
       node_set <- Dims$wc
   } else if (clusters=="cgmm") {
       require(mclust)
       HCA    <- mclust::Mclust(Corr)
       node_set <- HCA$classification
-  } else {"No cluster values or method identified!"}
+  } else {"No clusters or estimation method identified!"}
 
   ### Step 2: Group correlations====
+  print("Step 2: Group correlations")
   ## Average correlations
   groupVS <- function(Corr,blocks) {
     Bs <- length(unique(blocks))
@@ -42,6 +44,7 @@ PCG <- function(data, clusters=NULL, alpha=.05){
   colnames(Ndata) <- colnames(data)
 
   ### Step 3: Structure Learning====
+  print("Step 3: Structure Learning")
   ## IS1: Constraint-based structure learning algorithm
   require(pcalg)
   skel <- pcalg::skeleton(suffStat=list(C=PowerEdges, n=n),
@@ -66,31 +69,42 @@ PCG <- function(data, clusters=NULL, alpha=.05){
     }
   }
 
-  ### Step 4: Three types of fine tunning for implied Chain Graphs
-  m <- PCT
-  Blist1 = data.frame(to=rownames(m)[row(m)[lower.tri(m)]],
-                      from=colnames(m)[col(m)[lower.tri(m)]],
-                      corr=m[lower.tri(m)])
-  Blist1 <- Blist1[,c(2,1,3)]
-  Blist2 = data.frame(to=rownames(m)[row(m)[upper.tri(m)]],
-                      from=colnames(m)[col(m)[upper.tri(m)]],
-                      corr=m[upper.tri(m)])
-  Blist2 <- Blist2[,c(2,1,3)]
-  Blist <- rbind(Blist1,Blist2)
-  Blist <- Blist[Blist$corr == F,-3]
+  if (fineTuning == T) {
+    ### Step 4: Three types of fine tuning for implied Chain Graphs
+    print("Step 4: Fine-tuning")
+    m <- PCT
+    Blist1 = data.frame(to=rownames(m)[row(m)[lower.tri(m)]],
+                        from=colnames(m)[col(m)[lower.tri(m)]],
+                        corr=m[lower.tri(m)])
+    Blist1 <- Blist1[,c(2,1,3)]
+    Blist2 = data.frame(to=rownames(m)[row(m)[upper.tri(m)]],
+                        from=colnames(m)[col(m)[upper.tri(m)]],
+                        corr=m[upper.tri(m)])
+    Blist2 <- Blist2[,c(2,1,3)]
+    Blist <- rbind(Blist1,Blist2)
+    Blist <- Blist[Blist$corr == F,-3]
+    
+    require(bnlearn)
+    fitp <- bnlearn::pc.stable(Ndata, blacklist = Blist)
+    fith <- bnlearn::hc(Ndata, blacklist = Blist)
+    fitm <- bnlearn::mmhc(Ndata, blacklist = Blist)
+    PCfu <- t(bnlearn::amat(fitp))
+    HCfu <- t(bnlearn::amat(fith))
+    MMHC <- t(bnlearn::amat(fitm))
+    
+    Result <- list("PCG" = t(PC),
+                   "clusters"= node_set,
+                   "powerEdges" = PowerEdges,
+                   "CG_F"=t(PCT),
+                   "CG_PC"=PCfu,
+                   "CG_HC"=HCfu,
+                   "CG_MMHC"=MMHC)
+  } else if (fineTuning == F) {
+    Result <- list("PCG" = t(PC),
+                   "clusters"= node_set,
+                   "powerEdges" = PowerEdges,
+                   "CG_F"=t(PCT))
+  } else stop("Unknow request for fine-tuning.")
 
-  require(bnlearn)
-  fitp <- bnlearn::pc.stable(Ndata, blacklist = Blist)
-  fith <- bnlearn::hc(Ndata, blacklist = Blist)
-  fitm <- bnlearn::mmhc(Ndata, blacklist = Blist)
-  PCfu <- t(bnlearn::amat(fitp))
-  HCfu <- t(bnlearn::amat(fith))
-  MMHC <- t(bnlearn::amat(fitm))
-
-  Result <- list("PCG" = t(PC),
-                 "CG_F"=t(PCT),
-                 "CG_PC"=PCfu,
-                 "CG_HC"=HCfu,
-                 "CG_MMHC"=MMHC)
   return(Result)
 }
