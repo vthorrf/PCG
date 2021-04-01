@@ -1,18 +1,20 @@
 Package: PCG
 Type: Package
 Title: Procedure for learning Power Chain Graphs
-Version: 0.1
-YEAR: 2019, September
+Version: 0.2.0
+YEAR: 2021, March
 Author: Vithor Rosa Franco <vithorfranco@gmail.com>
 Maintainer: Vithor Rosa Franco <vithorfranco@gmail.com>
-Description: Applies clustering and structure learning for identifying Power Chain Graphs.
-Depends: bnlearn,
-         EGAnet,
-         mclust,
-         pcalg, 
-         psych, 
-         qgraph
-License: GPL-2
+Description: Applies clustering and structure learning for structure learning of Power Chain Graphs
+             and its induced Chain Graph.
+Depends: R (>= 4.0.0)
+Imports: bnlearn (>= 4.5),
+         EGAnet (>= 0.9.3),
+         mclust (>= 5.4.6),
+         pcalg (>= 2.6-10), 
+         psych (>= 1.9.12-31), 
+         qgraph (>= 1.6.5)
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 URL: http://influencia.unb.br/
