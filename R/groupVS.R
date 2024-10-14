@@ -11,5 +11,6 @@ groupVS <- function(Corr,blocks) {
                                          which(blocks == j)],na.rm=T))
     }
   }
+  diag(Test) <- 1
   return(Test)
 }

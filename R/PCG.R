@@ -1,27 +1,43 @@
-PCG <- function(data, clusters=NULL, alpha=.05, fineTuning=F){
+PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
 
   ### Step 1: Get clusters====
   cat("Step 1: Get clusters\n")
-  ## Polychoric correlation
-  #require(psych)
-  #require(qgraph)
-  Corr <- tryCatch(cor_auto(data, forcePD=T), error=function(e) {
-          tryCatch(mixedCor(data)$rho, error=function(e) {
-            cor(data, method="spearman")
-          })
-  })
+  ## Correlations
+  if(cor %in% c("p", "pearson")) {
+    # Pearson
+    cor(data, method="pearson")
+  } else if(cor %in% c("s", "spearman")) {
+    # Spearman
+    cor(data, method="spearman")
+  } else if(cor %in% c("k", "kendall")) {
+    # Kendall
+    cor(data, method="Kendall")
+  } else if(cor == "auto") {
+    Corr <- tryCatch( cor_auto(data, forcePD=T), error=function(e) mixedCor(data)$rho )
+  } else if (cor == "poly") {
+    Corr <- tryCatch( cor_auto(data, forcePD=T, ordinalLevelMax=max(data)),
+                      error=function(e) mixedCor(data,ncat=max(data))$rho )
+  } else {
+    stop("Unknown correlation method! Please check the documentation.")
+  }
+  ## Sample size
   n <- nrow(data)
-  if(length(clusters) == ncol(data)) {
-      node_set <- clusters
-    } else if (clusters=="ega") {
-      #require(EGAnet)
+  ## Clusters
+  if(length(clusters) == 1) {
+    if (clusters=="ega") {
       Dims     <- EGA(data=Corr, n=n, plot.EGA=F)
       node_set <- Dims$wc
-  } else if (clusters=="cgmm") {
-      #require(mclust)
+    } else if (clusters=="cgmm") {
       HCA      <- Mclust(Corr)
       node_set <- HCA$classification
-  } else {"No clusters or estimation method identified!"}
+    } else {
+      stop("Estimation method should be 'ega' or 'cgmm'. Please check the documentation.")
+    }
+  } else if(length(clusters) == ncol(data)) {
+      node_set <- clusters
+  } else {
+    stop("Argument clusters should be 'ega', 'cgmm', or a numeric vector with length equal to the length of columns in the data.")
+  }
 
   ### Step 2: Group correlations====
   cat("Step 2: Group correlations\n")
@@ -37,7 +53,6 @@ PCG <- function(data, clusters=NULL, alpha=.05, fineTuning=F){
   ### Step 3: Structure Learning====
   cat("Step 3: Structure Learning\n")
   ## IS1: Constraint-based structure learning algorithm
-  #require(pcalg)
   skel <- skeleton(suffStat=list(C=PowerEdges, n=n),
                    indepTest=gaussCItest, alpha=alpha,
                    method="stable.fast", labels=V)
@@ -83,13 +98,12 @@ PCG <- function(data, clusters=NULL, alpha=.05, fineTuning=F){
     Blist <- rbind(Blist1,Blist2)
     Blist <- Blist[Blist$corr == F,-3]
 
-    #require(bnlearn)
     fitp <- pc.stable(Ndata, blacklist = Blist)
     fith <- hc(Ndata, blacklist = Blist)
     fitm <- mmhc(Ndata, blacklist = Blist)
-    PCfu <- t(amat(fitp))
-    HCfu <- t(amat(fith))
-    MMHC <- t(amat(fitm))
+    PCfu <- amat(fitp)
+    HCfu <- amat(fith)
+    MMHC <- amat(fitm)
 
     Result <- list("PCG" = t(PC),
                    "clusters"= node_set,
@@ -105,7 +119,9 @@ PCG <- function(data, clusters=NULL, alpha=.05, fineTuning=F){
                    "powerEdges" = PowerEdges,
                    "CG_U"=t(UG),
                    "CG_D"=t(PCT))
-  } else stop("Unknow request for fine-tuning.")
+  } else {
+    stop("Unknow request for fine-tuning.")
+  }
 
   return(Result)
 }
