@@ -23,6 +23,7 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
   ## Sample size
   n <- nrow(data)
   ## Clusters
+  if(is.null(clusters)) clusters <- "cgmm"
   if(length(clusters) == 1) {
     if (clusters=="ega") {
       Dims     <- EGA(data=Corr, n=n, plot.EGA=F)
