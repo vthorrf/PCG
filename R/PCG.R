@@ -5,13 +5,13 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
   ## Correlations
   if(cor %in% c("p", "pearson")) {
     # Pearson
-    cor(data, method="pearson")
+    Corr <- cor(data, method="pearson")
   } else if(cor %in% c("s", "spearman")) {
     # Spearman
-    cor(data, method="spearman")
+    Corr <- cor(data, method="spearman")
   } else if(cor %in% c("k", "kendall")) {
     # Kendall
-    cor(data, method="Kendall")
+    Corr <- cor(data, method="Kendall")
   } else if(cor == "auto") {
     Corr <- tryCatch( cor_auto(data, forcePD=T), error=function(e) mixedCor(data)$rho )
   } else if (cor == "poly") {
@@ -23,6 +23,9 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
   ## Sample size
   n <- nrow(data)
   ## Clusters
+  if(is.null(clusters)) {
+    clusters = "cgmm"
+  }
   if(length(clusters) == 1) {
     if (clusters=="ega") {
       Dims     <- EGA(data=Corr, n=n, plot.EGA=F)
@@ -53,26 +56,22 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
   ### Step 3: Structure Learning====
   cat("Step 3: Structure Learning\n")
   ## IS1: Constraint-based structure learning algorithm
-  skel <- skeleton(suffStat=list(C=PowerEdges, n=n),
-                   indepTest=gaussCItest, alpha=alpha,
-                   method="stable.fast", labels=V)
-  SK <- as(skel,'amat') == 1
-  fit <- pc(suffStat=list(C=PowerEdges, n=n), fixedGaps=(SK==F),
+  fit <- pc(suffStat=list(C=PowerEdges, n=n),
             indepTest=gaussCItest, alpha=alpha,
             labels=V, skel.method="stable.fast")
   PC <- as(fit,'amat') == 1
+  cpdag <- as.matrix(as_adjacency_matrix(graph_from_graphnel(
+             dag2cpdag(as(t(PC), "graphNEL")))))
+  udg <- {{cpdag == 1} & {t(cpdag) == 1}} * cpdag
+  dg  <- {{cpdag == 1} != {t(cpdag) == 1}} * cpdag
+  net <- cpdag
 
   ## IS2: Get full graph
   # Directed graph
-  SKT <- Corr; PCT <- Corr
+  PCT <- Corr
   for (i in 1:ncol(Corr)) {
     for (j in 1:ncol(Corr)) {
-      SKT[i,j] <- tryCatch(SK[node_set[i],node_set[j]], error=function(e) NA)
-    }
-  }
-  for (i in 1:ncol(Corr)) {
-    for (j in 1:ncol(Corr)) {
-      PCT[i,j] <- tryCatch(PC[node_set[i],node_set[j]], error=function(e) NA)
+      PCT[i,j] <- tryCatch(net[node_set[i],node_set[j]], error=function(e) NA)
     }
   }
   # Undirected graph
@@ -105,20 +104,21 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
     HCfu <- amat(fith)
     MMHC <- amat(fitm)
 
-    Result <- list("PCG" = t(PC),
+    Result <- list("PCG" = net,
                    "clusters"= node_set,
                    "powerEdges" = PowerEdges,
-                   "CG_U"=t(UG),
-                   "CG_D"=t(PCT),
+                   "CG_U"=UG,
+                   "CG_D"=PCT,
                    "CG_PC"=PCfu,
                    "CG_HC"=HCfu,
-                   "CG_MMHC"=MMHC)
+                   "CG_MMHC"=MMHC,
+                   "fit"=list("PC"=fitp, "HC"=fith, "MMHC"=fitm))
   } else if (fineTuning == F) {
-    Result <- list("PCG" = t(PC),
+    Result <- list("PCG" = net,
                    "clusters"= node_set,
                    "powerEdges" = PowerEdges,
-                   "CG_U"=t(UG),
-                   "CG_D"=t(PCT))
+                   "CG_U"=UG,
+                   "CG_D"=PCT)
   } else {
     stop("Unknow request for fine-tuning.")
   }
