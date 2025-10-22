@@ -104,9 +104,9 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
     fitp <- pc.stable(Ndata, blacklist = Blist)
     fith <- hc(Ndata, blacklist = Blist)
     fitm <- mmhc(Ndata, blacklist = Blist)
-    PCfu <- amat(fitp)
-    HCfu <- amat(fith)
-    MMHC <- amat(fitm)
+    PCfu <- t(amat(fitp))
+    HCfu <- t(amat(fith))
+    MMHC <- t(amat(fitm))
 
     Result <- list("PCG" = net,
                    "clusters"= node_set,
