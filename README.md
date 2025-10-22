@@ -1,7 +1,7 @@
 PCG: Power Chain Graph Structure Learning
 =============
 
-This package was developed acompanying authors' PhD dissertation.
+This package implements the causal discovery method for [Power Chain Graphs](https://doi.org/10.5964/qcmb.8383).
 
 PCG depends on bnlearn, EGAnet, mclust, psych, pcalg, qgraph.
 
@@ -14,5 +14,3 @@ Using the 'remotes' package:
 
     install.packages("remotes")
     remotes::install_github("vthorrf/PCG")
-
-
