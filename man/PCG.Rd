@@ -24,7 +24,7 @@ A list containing the following component:
   \item{CG_HC}{The directed part of the chain graph implied by the PCG, fine-tuned with the hill-climbing algorithm.}
   \item{CG_MMCC}{The directed part of the chain graph implied by the PCG, fine-tuned with the Min-Max hill-climbing algorithm.}
 }
-\refences{
+\references{
 Franco, V. R., Barros, G., Wiberg, M., & Laros, J. A. (2022). Chain graph reduction into power chain graphs. Quantitative and Computational Methods in Behavioral Sciences, 2(1). https://doi.org/10.5964/qcmb.8383
 }
 \examples{

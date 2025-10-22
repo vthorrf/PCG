@@ -56,7 +56,11 @@ PCG <- function(data, cor="auto", clusters=NULL, alpha=.05, fineTuning=F){
   ### Step 3: Structure Learning====
   cat("Step 3: Structure Learning\n")
   ## IS1: Constraint-based structure learning algorithm
-  fit <- pc(suffStat=list(C=PowerEdges, n=n),
+  skel <- skeleton(suffStat=list(C=PowerEdges, n=n),
+                   indepTest=gaussCItest, alpha=alpha,
+                   method="stable.fast", labels=V)
+  SK <- as(skel,'amat') == 1
+  fit <- pc(suffStat=list(C=PowerEdges, n=n), fixedGaps=(SK==F),
             indepTest=gaussCItest, alpha=alpha,
             labels=V, skel.method="stable.fast")
   PC <- as(fit,'amat') == 1
